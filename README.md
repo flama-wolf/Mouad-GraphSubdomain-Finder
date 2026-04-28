@@ -43,7 +43,8 @@ INPUT domain
 
 ```bash
 # 1. Clone & enter directory
-git clone <repo> && cd "graph subdomains"
+git clone <repo>
+cd "graph subdomains"
 
 # 2. Install dependencies
 pip install -r requirements.txt
