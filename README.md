@@ -221,7 +221,23 @@ graph subdomains/
 This tool performs **passive OSINT only**. All data is sourced from public APIs and historical databases. No active probing, port scanning, or brute-force techniques are used.
 
 Use responsibly. Only scan domains you own or have explicit written permission to research.
+## ⚖️ Legal Notice 
 
+This tool is strictly for legal and authorized use only 🧾
+
+It only uses public OSINT sources and openly available databases 🌐 — no secret backdoors, no private systems, no “breaking in at 3 AM hacker movie vibes” 🚫💻
+
+## 🧠 The golden rule:
+
+Only use it if you have clear permission to investigate the domain or system.
+
+If you don’t have permission… it’s not “testing,” it’s just you knocking on random digital doors hoping one magically opens 🚪👀
+
+Unauthorized use is strongly discouraged 🚫 and is fully on the user’s responsibility.
+
+## 🕵️‍♂️ Final vibe check:
+
+Stay legal.
 ---
 
 <div align="center">
