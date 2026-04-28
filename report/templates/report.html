@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mouad-Subdomain finder passive — {{ target }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Theme Tokens */
+    :root {
+      --bg-deep: #020617;
+      --bg-mesh: #0f172a;
+      --surface: rgba(15, 23, 42, 0.6);
+      --surface-hover: rgba(30, 41, 59, 0.7);
+      --surface-active: rgba(51, 65, 85, 0.5);
+      --border: rgba(148, 163, 184, 0.1);
+      --border-light: rgba(148, 163, 184, 0.2);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-faint: #64748b;
+
+      --accent-cyan: #06b6d4;
+      --accent-cyan-dim: rgba(6, 182, 212, 0.15);
+
+      --accent-amber: #f59e0b;
+      --accent-amber-dim: rgba(245, 158, 11, 0.15);
+
+      --accent-emerald: #10b981;
+      --accent-emerald-dim: rgba(16, 185, 129, 0.15);
+
+      --accent-purple: #8b5cf6;
+      --accent-purple-dim: rgba(139, 92, 246, 0.15);
+
+      --accent-rose: #f43f5e;
+      --accent-rose-dim: rgba(244, 63, 94, 0.15);
+
+      --accent-blue: #3b82f6;
+      --accent-blue-dim: rgba(59, 130, 246, 0.15);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-display: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    /* Reset & Base */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body::before {
+      background:
+        radial-gradient(circle at 15% 50%, rgba(6, 182, 212, 0.04), transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.04), transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(59, 130, 246, 0.03), transparent 50%);
+    }
+
+    body::after {
+      background-image: linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.3;
+      mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 80%);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--surface-active);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-faint);
+    }
+
+    /* Typography */
+    h1,
+    h2,
+    h3,
+    .logo b,
+    .stat-val {
+      font-family: var(--font-display);
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+    }
+
+    a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: var(--text-main);
+      text-decoration: underline;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(2, 6, 23, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+    }
+
+    .logo-icon svg {
+      color: white;
+      width: 20px;
+      height: 20px;
+    }
+
+    .logo span {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .logo b {
+      color: var(--text-main);
+      font-weight: 700;
+      background: linear-gradient(to right, #fff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .pill b {
+      color: var(--text-main);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 12px var(--accent-emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.6;
+        transform: scale(0.9);
+      }
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1536px;
+      margin: 0 auto;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* Section Headers */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      color: var(--text-faint);
+      text-transform: none;
+      letter-spacing: 0;
+      font-family: var(--font-sans);
+      font-weight: 400;
+      margin-left: 8px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: slideUp 0.6s ease-out backwards;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 0 20px var(--glow);
+      border-color: var(--border-light);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at top right, var(--glow), transparent 70%);
+      opacity: 0.15;
+      transition: opacity 0.3s;
+    }
+
+    .stat-card:hover::before {
+      opacity: 0.3;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-name {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .stat-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-dim);
+      color: var(--color);
+    }
+
+    .stat-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .stat-val {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text-main);
+    }
+
+    .stat-bar-bg {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .stat-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--color);
+      animation: fillBar 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      transform-origin: left;
+    }
+
+    @keyframes fillBar {
+      from {
+        transform: scaleX(0);
+      }
+
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Stat Types */
+    .s-sub {
+      --color: var(--accent-cyan);
+      --glow: rgba(6, 182, 212, 0.4);
+      --bg-dim: var(--accent-cyan-dim);
+      animation-delay: 0.0s;
+    }
+
+    .s-ip {
+      --color: var(--accent-amber);
+      --glow: rgba(245, 158, 11, 0.4);
+      --bg-dim: var(--accent-amber-dim);
+      animation-delay: 0.1s;
+    }
+
+    .s-url {
+      --color: var(--accent-emerald);
+      --glow: rgba(16, 185, 129, 0.4);
+      --bg-dim: var(--accent-emerald-dim);
+      animation-delay: 0.2s;
+    }
+
+    .s-eml {
+      --color: var(--accent-purple);
+      --glow: rgba(139, 92, 246, 0.4);
+      --bg-dim: var(--accent-purple-dim);
+      animation-delay: 0.3s;
+    }
+
+    .s-leak {
+      --color: var(--accent-rose);
+      --glow: rgba(244, 63, 94, 0.4);
+      --bg-dim: var(--accent-rose-dim);
+      animation-delay: 0.4s;
+    }
+
+    .s-rel {
+      --color: var(--accent-blue);
+      --glow: rgba(59, 130, 246, 0.4);
+      --bg-dim: var(--accent-blue-dim);
+      animation-delay: 0.5s;
+    }
+
+    /* Main Glass Card */
+    .glass-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      animation: slideUp 0.6s ease-out backwards;
+      animation-delay: 0.3s;
+    }
+
+    /* Graph */
+    .graph-container {
+      height: 750px;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.2) 0%, rgba(2, 6, 23, 0.8) 100%);
+      position: relative;
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    /* Tabs & Tables */
+    .tabs-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      background: rgba(2, 6, 23, 0.3);
+    }
+
+    .tabs-nav {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 6px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      background: var(--surface-active);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-light);
+    }
+
+    .tab-badge {
+      background: rgba(255, 255, 255, 0.1);
+      color: inherit;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: var(--radius-lg);
+      width: 280px;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 1px var(--accent-cyan);
+    }
+
+    .search-box svg {
+      width: 16px;
+      height: 16px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      width: 100%;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-faint);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 14px 24px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-main);
+      transition: background 0.2s;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--surface-hover);
+    }
+
+    .td-num {
+      color: var(--text-faint);
+      width: 60px;
+      font-size: 12px;
+    }
+
+    .td-sources {
+      color: var(--text-faint);
+      font-size: 11px;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .td-sources:hover {
+      white-space: normal;
+      overflow: visible;
+      background: var(--bg-deep);
+      position: relative;
+      z-index: 2;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      padding: 8px;
+    }
+
+    /* Badges & Chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+
+    .chip-ip {
+      background: var(--accent-amber-dim);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .chip-email {
+      background: var(--accent-purple-dim);
+      color: var(--accent-purple);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .chip-sub {
+      background: var(--accent-cyan-dim);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+    }
+
+    .empty-state {
+      padding: 80px 20px;
+      text-align: center;
+      color: var(--text-faint);
+      font-size: 14px;
+      font-family: var(--font-sans);
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    /* Source Breakdown */
+    .sources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      padding: 24px;
+    }
+
+    .source-card {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .source-card:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-light);
+      transform: scale(1.02);
+    }
+
+    .source-name {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent-cyan);
+    }
+
+    .source-val {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .source-card.empty {
+      opacity: 0.4;
+    }
+
+    .source-card.empty:hover {
+      opacity: 0.8;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-faint);
+      background: var(--bg-deep);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header {
+        padding: 0 16px;
+        height: auto;
+        padding-top: 12px;
+        padding-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .container {
+        padding: 16px;
+        gap: 20px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .tabs-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      footer {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="16" y="16" width="6" height="6" rx="1" />
+          <rect x="2" y="16" width="6" height="6" rx="1" />
+          <rect x="9" y="2" width="6" height="6" rx="1" />
+          <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
+          <path d="M12 12V8" />
+        </svg>
+      </div>
+      <span>Mouad-Subdomain finder <b>passive</b></span>
+    </div>
+    <div class="header-meta">
+      <span class="pill">
+        <div class="status-dot"></div> Passive OSINT
+      </span>
+      <span class="pill">Target: <b>{{ target }}</b></span>
+      <span class="pill mono">{{ generated_at }}</span>
+      <span class="pill mono">{{ elapsed }}s</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Intelligence Summary -->
+    <div>
+      <div class="section-title">Intelligence Summary</div>
+      <div class="stats-grid">
+
+        <!-- Subdomains -->
+        <div class="stat-card s-sub">
+          <div class="stat-header">
+            <span class="stat-name">Subdomains</span>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="16" y="16" width="6" height="6" rx="1" />
+                <rect x="2" y="16" width="6" height="6" rx="1" />
+                <rect x="9" y="2" width="6" height="6" rx="1" />
+                <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
+                <path d="M12 12V8" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-val">{{ subdomain_count }}</div>
+          <div class="stat-bar-bg">
+            {% set pct_sub = subdomain_count * 2 %}
+            <div class="stat-bar-fill" style="width: {{ pct_sub if pct_sub < 100 else 100 }}%"></div>
+          </div>
+        </div>
+
+        <!-- IP Addresses -->
+        <div class="stat-card s-ip">
+          <div class="stat-header">
+            <span class="stat-name">IP Addresses</span>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                <line x1="6" y1="6" x2="6.01" y2="6" />
+                <line x1="6" y1="18" x2="6.01" y2="18" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-val">{{ ip_count }}</div>
+          <div class="stat-bar-bg">
+            {% set pct_ip = ip_count * 5 %}
+            <div class="stat-bar-fill" style="width: {{ pct_ip if pct_ip < 100 else 100 }}%"></div>
+          </div>
+        </div>
+
+        <!-- URLs -->
+        <div class="stat-card s-url">
+          <div class="stat-header">
+            <span class="stat-name">URLs Discovered</span>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-val">{{ url_count }}</div>
+          <div class="stat-bar-bg">
+            {% set pct_url = (url_count * 1.5) | int %}
+            <div class="stat-bar-fill" style="width: {{ pct_url if pct_url < 100 else 100 }}%"></div>
+          </div>
+        </div>
+
+        <!-- Emails -->
+        <div class="stat-card s-eml">
+          <div class="stat-header">
+            <span class="stat-name">Emails</span>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-val">{{ email_count }}</div>
+          <div class="stat-bar-bg">
+            {% set pct_eml = email_count * 10 %}
+            <div class="stat-bar-fill" style="width: {{ pct_eml if pct_eml < 100 else 100 }}%"></div>
+          </div>
+        </div>
+
+        <!-- Code Leaks -->
+        <div class="stat-card s-leak">
+          <div class="stat-header">
+            <span class="stat-name">Code Leaks</span>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                <path d="M12 9v4" />
+                <path d="M12 17h.01" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-val">{{ leak_count }}</div>
+          <div class="stat-bar-bg">
+            {% set pct_leak = leak_count * 15 %}
+            <div class="stat-bar-fill" style="width: {{ pct_leak if pct_leak < 100 else 100 }}%"></div>
+          </div>
+        </div>
+
+        <!-- Relationships -->
+        <div class="stat-card s-rel">
+          <div class="stat-header">
+            <span class="stat-name">Relationships</span>
+            <div class="stat-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="3" x2="6" y2="15" />
+                <circle cx="18" cy="6" r="3" />
+                <circle cx="6" cy="18" r="3" />
+                <path d="M18 9a9 9 0 0 1-9 9" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-val">{{ total_edges }}</div>
+          <div class="stat-bar-bg">
+            {% set pct_rel = (total_edges * 0.5) | int %}
+            <div class="stat-bar-fill" style="width: {{ pct_rel if pct_rel < 100 else 100 }}%"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Network Visualization -->
+    <div>
+      <div class="section-title">
+        Network Visualization
+        <span class="section-subtitle">{{ total_nodes }} Nodes &middot; {{ total_edges }} Edges</span>
+      </div>
+      <div class="glass-panel">
+        <div class="graph-container" id="graph-root">
+          <iframe srcdoc="{{ graph_html | forceescape }}" style="width:100%;height:100%;border:none;"></iframe>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="color:#FF6B6B; background:#FF6B6B;"></div> Target Domain
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="color:#06b6d4; background:#06b6d4;"></div> Subdomain
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="color:#f59e0b; background:#f59e0b;"></div> IP Address
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="color:#10b981; background:#10b981;"></div> URL
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="color:#8b5cf6; background:#8b5cf6;"></div> Email
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intelligence Database -->
+    <div>
+      <div class="section-title">Intelligence Database</div>
+      <div class="glass-panel">
+
+        <div class="tabs-header">
+          <div class="tabs-nav">
+
+            <button class="tab-btn active" onclick="switchTab('sub', this)">
+              Subdomains
+              <span class="tab-badge" style="color: var(--accent-cyan)">{{ subdomain_count }}</span>
+            </button>
+
+            <button class="tab-btn" onclick="switchTab('ip', this)">
+              IP Addresses
+              <span class="tab-badge" style="color: var(--accent-amber)">{{ ip_count }}</span>
+            </button>
+
+            <button class="tab-btn" onclick="switchTab('url', this)">
+              URLs
+              <span class="tab-badge" style="color: var(--accent-emerald)">{{ url_count }}</span>
+            </button>
+
+            {% if email_count %}
+            <button class="tab-btn" onclick="switchTab('email', this)">
+              Emails
+              <span class="tab-badge" style="color: var(--accent-purple)">{{ email_count }}</span>
+            </button>
+            {% endif %}
+
+            {% if leak_count %}
+            <button class="tab-btn" onclick="switchTab('leak', this)">
+              Code Leaks
+              <span class="tab-badge" style="color: var(--accent-rose)">{{ leak_count }}</span>
+            </button>
+            {% endif %}
+
+          </div>
+
+          <div class="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" class="search-input" id="global-search" placeholder="Filter active view..."
+              onkeyup="filterActiveTable()">
+          </div>
+        </div>
+
+        <div class="table-container">
+
+          <!-- Subdomains Panel -->
+          <div class="tab-panel active" id="panel-sub">
+            <div class="table-wrapper">
+              <table id="tbl-sub">
+                <thead>
+                  <tr>
+                    <th class="td-num">#</th>
+                    <th>Subdomain</th>
+                    <th>Resolved IP</th>
+                    <th>Intelligence Sources</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for s in subdomains %}
+                  <tr>
+                    <td class="td-num">{{ loop.index }}</td>
+                    <td><span class="chip chip-sub">sub</span> &nbsp;{{ s.value }}</td>
+                    <td>
+                      {% if s.ip and s.ip != '—' %}
+                      <span class="chip chip-ip">{{ s.ip }}</span>
+                      {% else %}
+                      <span style="color:var(--text-faint)">—</span>
+                      {% endif %}
+                    </td>
+                    <td class="td-sources" title="{{ s.sources }}">{{ s.sources }}</td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="4">
+                      <div class="empty-state">
+                        <div class="empty-icon">🛡️</div>
+                        No subdomains mapped in this operation.
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- IPs Panel -->
+          <div class="tab-panel" id="panel-ip">
+            <div class="table-wrapper">
+              <table id="tbl-ip">
+                <thead>
+                  <tr>
+                    <th class="td-num">#</th>
+                    <th>IP Address</th>
+                    <th>Resolved From</th>
+                    <th>Geolocation</th>
+                    <th>Intelligence Sources</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for ip in ips %}
+                  <tr>
+                    <td class="td-num">{{ loop.index }}</td>
+                    <td><span class="chip chip-ip">{{ ip.value }}</span></td>
+                    <td style="color:var(--text-muted)">{{ ip.resolved_from }}</td>
+                    <td>{{ ip.country | default('—') }}</td>
+                    <td class="td-sources" title="{{ ip.sources }}">{{ ip.sources }}</td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="5">
+                      <div class="empty-state">
+                        <div class="empty-icon">🌐</div>
+                        No IP addresses mapped.
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- URLs Panel -->
+          <div class="tab-panel" id="panel-url">
+            <div class="table-wrapper">
+              <table id="tbl-url">
+                <thead>
+                  <tr>
+                    <th class="td-num">#</th>
+                    <th>URL Endpoint</th>
+                    <th>Hostname</th>
+                    <th>Intelligence Sources</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for u in urls %}
+                  <tr>
+                    <td class="td-num">{{ loop.index }}</td>
+                    <td>
+                      <a href="{{ u.value }}" target="_blank" rel="noopener noreferrer">
+                        {{ u.value[:90] }}{% if u.value | length > 90 %}…{% endif %}
+                      </a>
+                    </td>
+                    <td style="color:var(--text-muted)">{{ u.hostname }}</td>
+                    <td class="td-sources" title="{{ u.sources }}">{{ u.sources }}</td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="4">
+                      <div class="empty-state">
+                        <div class="empty-icon">🔗</div>
+                        No URLs discovered.
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Emails Panel -->
+          {% if email_count %}
+          <div class="tab-panel" id="panel-email">
+            <div class="table-wrapper">
+              <table id="tbl-email">
+                <thead>
+                  <tr>
+                    <th class="td-num">#</th>
+                    <th>Email Address</th>
+                    <th>Intelligence Sources</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for e in emails %}
+                  <tr>
+                    <td class="td-num">{{ loop.index }}</td>
+                    <td><span class="chip chip-email">{{ e.value }}</span></td>
+                    <td class="td-sources" title="{{ e.sources }}">{{ e.sources }}</td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="3">
+                      <div class="empty-state">
+                        <div class="empty-icon">📧</div>
+                        No emails discovered.
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Leaks Panel -->
+          {% if leak_count %}
+          <div class="tab-panel" id="panel-leak">
+            <div class="table-wrapper">
+              <table id="tbl-leak">
+                <thead>
+                  <tr>
+                    <th class="td-num">#</th>
+                    <th>Leaked URL / Reference</th>
+                    <th>Repository Context</th>
+                    <th>Intelligence Sources</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for l in leaks %}
+                  <tr>
+                    <td class="td-num">{{ loop.index }}</td>
+                    <td>
+                      <a href="{{ l.value }}" target="_blank" rel="noopener noreferrer"
+                        style="color:var(--accent-rose)">
+                        {{ l.value[:80] }}{% if l.value | length > 80 %}…{% endif %}
+                      </a>
+                    </td>
+                    <td style="color:var(--text-muted)">{{ l.meta.repo | default('—') }}</td>
+                    <td class="td-sources" title="{{ l.sources }}">{{ l.sources }}</td>
+                  </tr>
+                  {% else %}
+                  <tr>
+                    <td colspan="4">
+                      <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        No code leaks found.
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% endif %}
+
+        </div><!-- /.table-container -->
+      </div><!-- /.glass-panel -->
+    </div>
+
+    <!-- Source Telemetry -->
+    <div>
+      <div class="section-title">Telemetry &amp; Source Breakdown</div>
+      <div class="glass-panel">
+        <div class="sources-grid">
+          {% for src, cnt in source_stats.items() %}
+          <div class="source-card {% if cnt == 0 %}empty{% endif %}">
+            <span class="source-name">{{ src }}</span>
+            <span class="source-val"
+              style="color: {% if cnt > 0 %}var(--text-main){% else %}var(--text-faint){% endif %}">{{ cnt }}</span>
+          </div>
+          {% else %}
+          <p style="color:var(--text-faint); padding: 24px; font-family: var(--font-sans);">No source telemetry
+            available.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.container -->
+
+  <footer>
+    <div>Mouad-Subdomain finder passive &mdash; <b>Passive Intelligence Engine</b></div>
+    <div>Operation Target: <b style="color:var(--text-main)">{{ target }}</b> &nbsp;&middot;&nbsp; Compiled: {{
+      generated_at }}</div>
+  </footer>
+
+  <script>
+    // Tab Switching
+    function switchTab(name, btnEl) {
+      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+
+      btnEl.classList.add('active');
+      var panel = document.getElementById('panel-' + name);
+      if (panel) panel.classList.add('active');
+
+      // Clear and re-run filter on tab switch
+      document.getElementById('global-search').value = '';
+      filterActiveTable();
+    }
+
+    // Live Filter for Active Tab's Table
+    function filterActiveTable() {
+      var q = document.getElementById('global-search').value.toLowerCase().trim();
+      var activePanel = document.querySelector('.tab-panel.active');
+      if (!activePanel) return;
+
+      var rows = activePanel.querySelectorAll('tbody tr');
+      rows.forEach(function (row) {
+        // Skip empty-state rows
+        if (row.querySelector('.empty-state')) return;
+        var text = row.textContent.toLowerCase();
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+      });
+    }
+
+    // Keyboard shortcut: "/" focuses search
+    document.addEventListener('keydown', function (e) {
+      if (e.key === '/' && document.activeElement !== document.getElementById('global-search')) {
+        e.preventDefault();
+        document.getElementById('global-search').focus();
+      }
+      if (e.key === 'Escape') {
+        document.getElementById('global-search').value = '';
+        filterActiveTable();
+        document.getElementById('global-search').blur();
+      }
+    });
+  </script>
+</body>
+
+</html>
