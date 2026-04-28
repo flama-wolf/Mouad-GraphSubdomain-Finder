@@ -236,8 +236,7 @@ If you don’t have permission… it’s not “testing,” it’s just you knoc
 Unauthorized use is strongly discouraged 🚫 and is fully on the user’s responsibility.
 
 ## 🕵️‍♂️ Final vibe check:
-
-Stay legal.
+     Stay legal.
 ---
 
 <div align="center">
